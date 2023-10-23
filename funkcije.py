@@ -27,3 +27,76 @@ def napisi_csv(info, ekipa):
         csv_writer.writerow(["Ime igralca", "Višina", "Igralni položaj"])
         for informacija in info:
             csv_writer.writerow(informacija)
+
+def dobi_seznam_igralcev(csv_datoteka):
+    with open(csv_datoteka, "r") as csvfile:
+        igralci1 = []
+        for vrstica in csv.reader(csvfile):
+            igralci1.append(vrstica[0])
+        igralci1.remove('Ime igralca')
+    igralci = [x.replace(' ', '-') for x in igralci1]
+    return igralci
+
+def dobi_seznam_atributov(igralec):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
+    }
+    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
+
+    with open("igralec.html", "w", encoding="UTF8") as dat:
+        dat.write(stran.text)
+
+    with open(f"igralec.html", "r", encoding="utf-8") as file:
+        soup = BeautifulSoup(file, "html.parser")
+
+    tab = soup.find('div', class_='row mr-md-n4')
+
+    atributi = []  
+
+    if tab is not None:
+        bloki = tab.find_all('div', class_='card mb-3 mb-md-4 mr-2')
+
+        for blok in bloki:
+            vrstica = blok.find_all('li', class_="mb-1")
+             
+            for vrednosti in vrstica:
+                atribut = vrednosti.text.strip()
+                vrednost = re.findall(r"\d{2}", vrednosti.text)
+
+                if vrednost:
+                    atributi.append(atribut)
+    else:
+        atributi = ["abc", "baaa"]  
+
+    najdelsi = max(atributi, key=len)
+    atributi.remove(najdelsi)
+
+    
+    atributi = [re.sub(r'\d+', '', x) for x in atributi]
+
+    return atributi
+
+def dobi_vrednosti(igralec):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"}
+    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
+
+    with open("igralec.html", "w", encoding="UTF8") as dat:
+        dat.write(stran.text)
+
+    with open("igralec.html", "r", encoding="utf-8") as file:
+        soup = BeautifulSoup(file, "html.parser")
+
+    tab = soup.find('div', class_='row mr-md-n4')
+    
+    vrednosti2 = []  
+
+    if tab is not None:
+        bloki = tab.find_all('div', class_='card mb-3 mb-md-4 mr-2')
+        for blok in bloki:
+            vrstica = blok.find_all('li', class_='mb-1')
+            for vrednosti in vrstica:
+                vrednost = re.findall(r"\d{2}", vrednosti.text)
+                if vrednost:
+                    vrednosti2.extend(vrednost)  
+
+    return vrednosti2
