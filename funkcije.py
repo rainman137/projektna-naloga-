@@ -1,6 +1,8 @@
 import re
 from bs4 import BeautifulSoup
 import csv
+import requests
+import import_requests
 
 def najdi_podetke_igralcev(ekipa):
     with open(f"{ekipa}.html", "r", encoding="utf-8") as file:
