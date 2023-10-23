@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
 from ekipe import seznam_ekip
 import funkcije
-
+import import_requests
+import requests
+import csv
 
 # Load the HTML content from "Atlanta-Hawks.html" or your HTML file
 for ekipa in seznam_ekip:
