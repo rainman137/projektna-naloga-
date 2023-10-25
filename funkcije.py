@@ -4,29 +4,28 @@ import csv
 import requests
 import import_requests
 
-def najdi_podetke_igralcev(ekipa):
-    with open(f"{ekipa}.html", "r", encoding="utf-8") as file:
+#Poišče imena igralcev, ter njihove osnovne podatke na začetni strani
+def najdi_imena_igralcev(ekipa):
+    with open(f"{ekipa}.html", "r", encoding="UTF8") as file:
         soup = BeautifulSoup(file, "html.parser")
     
     tab = soup.find('table', class_='table table-striped table-sm table-hover overflow-hidden mb-2')
     info = []
     if tab:
         for vrstica in tab.find_all("tr"):
-            ime = vrstica.find("a", title=True)
-            if ime:
+            try:
+                ime = vrstica.find("a", title=True)
                 ime = ime.text.strip()
-                najdi_visino = re.search(r'(\d{1,2})\'(\d{1,2})"', vrstica.text)
-                visina = f"{najdi_visino.group(1)}'{najdi_visino.group(2)}\"" if najdi_visino else ""
-                pos = [pos.strip() for pos in re.findall(r'PG |SG |C |PF |SF ', vrstica.text)]   
-                info.append([ime, visina, ", ".join(pos)])
+                pos = [pos.strip() for pos in re.findall(r'PG |SG |C |PF |SF ', vrstica.text)]  
+                info.append([ime, pos])
+            except Exception as e:
+                continue
     return info
 
-
 # Zapiše imena, ter podatke o igrlalcih v csv datoteko
-def napisi_csv(info, ekipa):
+def napisi_imena_csv(info, ekipa):
     with open(f"Informacije_o_igralcih_{ekipa}.csv", "w", newline="", encoding="UTF8") as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(["Ime igralca", "Višina", "Igralni položaj"])
         for informacija in info:
             csv_writer.writerow(informacija)
 
@@ -35,9 +34,15 @@ def dobi_seznam_igralcev(csv_datoteka):
         igralci1 = []
         for vrstica in csv.reader(csvfile):
             igralci1.append(vrstica[0])
-        igralci1.remove('Ime igralca')
     igralci = [x.replace(' ', '-') for x in igralci1]
     return igralci
+
+def dobi_seznam_plozajev(csv_datoteka):
+    with open(csv_datoteka, "r") as csvfile:
+        polozaji = []
+        for vrstica in csv.reader(csvfile):
+            polozaji.append(vrstica[1])
+    return polozaji
 
 def dobi_seznam_atributov(igralec):
     headers = {
@@ -78,6 +83,9 @@ def dobi_seznam_atributov(igralec):
 
     return atributi
 
+
+
+   
 def dobi_vrednosti(igralec):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"}
     stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
