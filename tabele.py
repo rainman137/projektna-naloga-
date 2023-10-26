@@ -13,7 +13,7 @@ for ekipa in seznam_ekip:
 
 #Zapiše prvo vrstco csv datoteke
 atributi = funkcije.dobi_seznam_atributov("luka-doncic")
-at = ["ime", "položaj", "ekipa"] + atributi
+at = ["ime", "polozaj", "ekipa"] + atributi
 with open(f"Informacije_o_igralcih.csv", "w", newline="") as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(at)
