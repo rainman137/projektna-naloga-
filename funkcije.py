@@ -44,6 +44,7 @@ def dobi_seznam_plozajev(csv_datoteka):
             polozaji.append(vrstica[1])
     return polozaji
 
+#Dobi seznam kategorij, da jih lahko zapišemo v tabelo
 def dobi_seznam_atributov(igralec):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
@@ -57,35 +58,29 @@ def dobi_seznam_atributov(igralec):
         soup = BeautifulSoup(file, "html.parser")
 
     tab = soup.find('div', class_='row mr-md-n4')
-
     atributi = []  
 
     if tab is not None:
         bloki = tab.find_all('div', class_='card mb-3 mb-md-4 mr-2')
-
         for blok in bloki:
-            vrstica = blok.find_all('li', class_="mb-1")
-             
+            vrstica = blok.find_all('li', class_="mb-1")    
             for vrednosti in vrstica:
                 atribut = vrednosti.text.strip()
                 vrednost = re.findall(r"\d{2}", vrednosti.text)
-
                 if vrednost:
                     atributi.append(atribut)
     else:
-        atributi = ["abc", "baaa"]  
+        atributi = ["abc", "baaa"]  #Ta del kode prepreci errorje
 
-    najdelsi = max(atributi, key=len)
-    atributi.remove(najdelsi)
-
-    
-    atributi = [re.sub(r'\d+', '', x) for x in atributi]
+    najdelsi = max(atributi, key=len) #Tu odstranimo eno od vrednosti, ki se ni shranila pravilno
+    atributi.remove(najdelsi)  
+    atributi = [re.sub(r'\d+', '', x) for x in atributi] #Ker so se vse vrednosti shranjevale v obliki: 34 Vrednost, jih tu preoblikujemo
 
     return atributi
 
 
 
-   
+#Poisce vrednosti za kategorije   
 def dobi_vrednosti(igralec):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"}
     stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
