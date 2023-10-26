@@ -1,89 +1,87 @@
 import re
-from bs4 import BeautifulSoup
 import csv
 import requests
-import import_requests
+from bs4 import BeautifulSoup
 
-#Poišče imena igralcev, ter njihove osnovne podatke na začetni strani
+# Poišče imena igralcev in njihove osnovne informacije na začetni strani
 def najdi_imena_igralcev(ekipa):
-    with open(f"{ekipa}.html", "r", encoding="UTF8") as file:
-        soup = BeautifulSoup(file, "html.parser")
+    with open(f"{ekipa}.html", "r", encoding="UTF8") as datoteka:
+        soup = BeautifulSoup(datoteka, "html.parser")
     
-    tab = soup.find('table', class_='table table-striped table-sm table-hover overflow-hidden mb-2')
-    info = []
-    if tab:
-        for vrstica in tab.find_all("tr"):
+    tabela = soup.find('table', class_='table table-striped table-sm table-hover overflow-hidden mb-2')
+    informacije = []
+    
+    if tabela:
+        for vrstica in tabela.find_all("tr"):
             try:
                 ime = vrstica.find("a", title=True)
                 ime = ime.text.strip()
-                pos = [pos.strip() for pos in re.findall(r'PG |SG |C |PF |SF ', vrstica.text)]  
-                info.append([ime, pos])
+                polozaji = [polozaj.strip() for polozaj in re.findall(r'PG |SG |C |PF |SF ', vrstica.text)]
+                informacije.append([ime, polozaji])
             except Exception as e:
                 continue
-    return info
+    return informacije
 
-# Zapiše imena, ter podatke o igrlalcih v csv datoteko
-def napisi_imena_csv(info, ekipa):
-    with open(f"Informacije_o_igralcih_{ekipa}.csv", "w", newline="", encoding="UTF8") as csvfile:
-        csv_writer = csv.writer(csvfile)
-        for informacija in info:
-            csv_writer.writerow(informacija)
+# Zapiše imena igralcev in informacije v CSV datoteko
+def napisi_imena_csv(informacije, ekipa):
+    with open(f"Informacije_o_igralcih_{ekipa}.csv", "w", newline="", encoding="UTF8") as datoteka_csv:
+        pisec_csv = csv.writer(datoteka_csv)
+        for informacija in informacije:
+            pisec_csv.writerow(informacija)
 
 def dobi_seznam_igralcev(csv_datoteka):
-    with open(csv_datoteka, "r") as csvfile:
-        igralci1 = []
-        for vrstica in csv.reader(csvfile):
-            igralci1.append(vrstica[0])
-    igralci = [x.replace(' ', '-') for x in igralci1]
+    with open(csv_datoteka, "r") as datoteka_csv:
+        igralci_s_presledki = []
+        for vrstica in csv.reader(datoteka_csv):
+            igralci_s_presledki.append(vrstica[0])
+    igralci = [x.replace(' ', '-') for x in igralci_s_presledki]
     return igralci
 
-def dobi_seznam_plozajev(csv_datoteka):
-    with open(csv_datoteka, "r") as csvfile:
+def dobi_seznam_polozajev(csv_datoteka):
+    with open(csv_datoteka, "r") as datoteka_csv:
         polozaji = []
-        for vrstica in csv.reader(csvfile):
+        for vrstica in csv.reader(datoteka_csv):
             polozaji.append(vrstica[1])
     return polozaji
 
-#Dobi seznam kategorij, da jih lahko zapišemo v tabelo
+# Dobi seznam atributov, da jih lahko zapišemo v tabelo
 def dobi_seznam_atributov(igralec):
-    headers = {
+    glave = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"
     }
-    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
+    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=glave)
 
     with open("igralec.html", "w", encoding="UTF8") as dat:
         dat.write(stran.text)
 
-    with open(f"igralec.html", "r", encoding="utf-8") as file:
-        soup = BeautifulSoup(file, "html.parser")
+    with open(f"igralec.html", "r", encoding="utf-8") as datoteka:
+        soup = BeautifulSoup(datoteka, "html.parser")
 
-    tab = soup.find('div', class_='row mr-md-n4')
-    atributi = []  
+    tabela = soup.find('div', class_='row mr-md-n4')
+    atributi = []
 
-    if tab is not None:
-        bloki = tab.find_all('div', class_='card mb-3 mb-md-4 mr-2')
+    if tabela is not None:
+        bloki = tabela.find_all('div', class_='card mb-3 mb-md-4 mr-2')
         for blok in bloki:
-            vrstica = blok.find_all('li', class_="mb-1")    
-            for vrednosti in vrstica:
+            vrstice = blok.find_all('li', class_="mb-1")
+            for vrednosti in vrstice:
                 atribut = vrednosti.text.strip()
                 vrednost = re.findall(r"\d{2}", vrednosti.text)
                 if vrednost:
                     atributi.append(atribut)
     else:
-        atributi = ["abc", "baaa"]  #Ta del kode prepreci errorje
+        atributi = ["abc", "baaa"]  # Ta del kode prepreči napake
 
-    najdelsi = max(atributi, key=len) #Tu odstranimo eno od vrednosti, ki se ni shranila pravilno
-    atributi.remove(najdelsi)  
-    atributi = [re.sub(r'\d+', '', x) for x in atributi] #Ker so se vse vrednosti shranjevale v obliki: 34 Vrednost, jih tu preoblikujemo
+    najdaljsi = max(atributi, key=len)
+    atributi.remove(najdaljsi)
+    atributi = [re.sub(r'\d+', '', x) for x in atributi]
 
     return atributi
 
-
-
-#Poisce vrednosti za kategorije   
+# Poišče vrednosti za kategorije   
 def dobi_vrednosti(igralec):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"}
-    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=headers)
+    glave = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0"}
+    stran = requests.get(f"https://www.2kratings.com/{igralec}", headers=glave)
 
     with open("igralec.html", "w", encoding="UTF8") as dat:
         dat.write(stran.text)
