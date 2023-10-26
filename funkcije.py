@@ -22,28 +22,6 @@ def najdi_imena_igralcev(ekipa):
                 continue
     return informacije
 
-# Zapiše imena igralcev in informacije v CSV datoteko
-def napisi_imena_csv(informacije, ekipa):
-    with open(f"Informacije_o_igralcih_{ekipa}.csv", "w", newline="", encoding="UTF8") as datoteka_csv:
-        pisec_csv = csv.writer(datoteka_csv)
-        for informacija in informacije:
-            pisec_csv.writerow(informacija)
-
-def dobi_seznam_igralcev(csv_datoteka):
-    with open(csv_datoteka, "r") as datoteka_csv:
-        igralci_s_presledki = []
-        for vrstica in csv.reader(datoteka_csv):
-            igralci_s_presledki.append(vrstica[0])
-    igralci = [x.replace(' ', '-') for x in igralci_s_presledki]
-    return igralci
-
-def dobi_seznam_polozajev(csv_datoteka):
-    with open(csv_datoteka, "r") as datoteka_csv:
-        polozaji = []
-        for vrstica in csv.reader(datoteka_csv):
-            polozaji.append(vrstica[1])
-    return polozaji
-
 # Dobi seznam atributov, da jih lahko zapišemo v tabelo
 def dobi_seznam_atributov(igralec):
     glave = {
@@ -103,3 +81,4 @@ def dobi_vrednosti(igralec):
                     vrednosti2.extend(vrednost)  
 
     return vrednosti2
+
