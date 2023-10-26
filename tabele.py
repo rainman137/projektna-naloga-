@@ -6,19 +6,19 @@ import requests
 import csv
 
 
-#napise imena igralcev v csv datoteko
+#Napise imena igralcev v csv datoteko
 for ekipa in seznam_ekip:
     sez = funkcije.najdi_imena_igralcev(ekipa)
     funkcije.napisi_imena_csv(sez, ekipa)
 
-
+#Zapiše prvo vrstco csv datoteke
 atributi = funkcije.dobi_seznam_atributov("luka-doncic")
 at = ["ime", "položaj", "ekipa"] + atributi
 with open(f"Informacije_o_igralcih.csv", "w", newline="") as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(at)
 
-
+#V csv datoteko napiše igralce, ter vrednosti
 for ekipa in seznam_ekip:
     igralci = funkcije.dobi_seznam_igralcev(f"Informacije_o_igralcih_{ekipa}.csv")
     polozaji = funkcije.dobi_seznam_plozajev(f"Informacije_o_igralcih_{ekipa}.csv")
